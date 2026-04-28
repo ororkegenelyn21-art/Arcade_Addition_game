@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Arcade Addition Game (Solo - Timed)</title>
+  <style>
+    body{margin:0;font-family:'Comic Sans MS',cursive;background:linear-gradient(135deg,#ffcc00,#ff6699);color:white;text-align:center;overflow:hidden;}
+    h1{font-size:48px;margin-top:20px;text-shadow:2px 2px #000;}
+    #game{margin-top:40px;display:none;}
+    .problem{font-size:40px;margin:20px;}
+    input{font-size:30px;padding:10px;border-radius:10px;border:none;text-align:center;}
+    button{font-size:24px;margin:5px;padding:10px 20px;border-radius:10px;border:none;background:#33ccff;color:#fff;cursor:pointer;}
+    button:hover{background:#0099cc;}
+    .scoreboard,.timer{font-size:28px;margin-top:20px;}
+    .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;animation:fadeOut 2s forwards;z-index:1000;}
+    @keyframes fadeOut{0%{opacity:1;}100%{opacity:0;transform:scale(2);}}
+    .numpad{margin-top:20px;}
+    .numpad button{width:60px;height:60px;font-size:24px;margin:5px;}
+    @media(max-width:600px){h1{font-size:32px;}.problem{font-size:28px;}input{font-size:24px;width:80%;}button{font-size:20px;padding:8px 16px;}.scoreboard,.timer{font-size:22px;}.numpad button{width:50px;height:50px;font-size:20px;}}
+  </style>
+</head>
+<body>
+  <h1>🎮 Arcade Addition Game (Solo - Timed) 🎮</h1>
+  <label for="timeSelect">Choose time:</label>
+  <select id="timeSelect">
+    <option value="30">30s</option>
+    <option value="60" selected>60s</option>
+    <option value="90">90s</option>
+  </select>
+  <button id="startBtn" onclick="startGame()">Start Game</button>
+  <audio id="bgMusic" src="arcade_music.mp3" loop></audio>
+  <audio id="ding" src="ding.mp3"></audio>
+  <audio id="buzz" src="buzz.mp3"></audio>
+
+  <div id="game">
+    <div class="problem" id="problem"></div>
+    <input type="text" id="answer" readonly>
+    <div class="numpad">
+      <button onclick="addDigit(1)">1</button><button onclick="addDigit(2)">2</button><button onclick="addDigit(3)">3</button><br>
+      <button onclick="addDigit(4)">4</button><button onclick="addDigit(5)">5</button><button onclick="addDigit(6)">6</button><br>
+      <button onclick="addDigit(7)">7</button><button onclick="addDigit(8)">8</button><button onclick="addDigit(9)">9</button><br>
+      <button onclick="addDigit(0)">0</button><button onclick="clearAnswer()">Clear</button><button onclick="submitAnswer()">Enter</button>
+    </div>
+    <div class="scoreboard" id="scoreboard"></div>
+    <div class="timer" id="timer"></div>
+    <button id="playAgainBtn" style="display:none;" onclick="resetGame()">Play Again</button>
+  </div>
+
+  <script>
+    let score=0,a,b,answer,timeLeft,timerInterval;
+
+    function startGame(){
+      document.getElementById("game").style.display="block";
+      document.getElementById("startBtn").style.display="none";
+      document.getElementById("timeSelect").style.display="none";
+      document.getElementById("bgMusic").volume=0.5;
+      document.getElementById("bgMusic").play();
+      score=0;
+      timeLeft=parseInt(document.getElementById("timeSelect").value);
+      document.getElementById("timer").textContent=`Time: ${timeLeft}s`;
+      document.getElementById("playAgainBtn").style.display="none";
+      timerInterval=setInterval(updateTimer,1000);
+      newProblem();
+    }
+
+    function updateTimer(){
+      timeLeft--;
+      document.getElementById("timer").textContent=`Time: ${timeLeft}s`;
+      if(timeLeft<=0){ clearInterval(timerInterval); endGame(); }
+    }
+
+    function newProblem(){
+      a=Math.floor(Math.random()*101);
+      b=Math.floor(Math.random()*101);
+      answer=a+b;
+      document.getElementById("problem").textContent=`What is ${a} + ${b}?`;
+      clearAnswer();
+      updateScoreboard();
+    }
+
+    function updateScoreboard(){ document.getElementById("scoreboard").textContent=`Score: ${score}`; }
+    function showPopup(symbol){ let popup=document.createElement("div"); popup.className="popup"; popup.textContent=symbol; document.body.appendChild(popup); setTimeout(()=>popup.remove(),2000); }
+    function addDigit(digit){ document.getElementById("answer").value+=digit; }
+    function clearAnswer(){ document.getElementById("answer").value=""; }
+
+    function submitAnswer(){
+      let userAnswer=parseInt(document.getElementById("answer").value);
+      if(userAnswer===answer){ score++; document.getElementById("ding").play(); showPopup("⭐ Correct! ⭐"); }
+      else{ document.getElementById("buzz").play(); showPopup("😜 Oops!"); }
+      newProblem();
+    }
+
+    function endGame(){
+      document.getElementById("problem").textContent="⏰ Time's up!";
+      document.getElementById("scoreboard").textContent=`Final Score: ${score}`;
+      document.querySelector(".numpad").style.display="none";
+      document.getElementById("playAgainBtn").style.display="inline-block";
+    }
+
+    function resetGame(){
+      document.querySelector(".numpad").style.display="block";
+      document.getElementById("startBtn").style.display="inline-block";
+      document.getElementById("timeSelect").style.display="inline-block";
+      document.getElementById("problem").textContent="";
+      document.getElementById("scoreboard").textContent="";
+      document.getElementById("timer").textContent="";
+      document.getElementById("playAgainBtn").style.display="none";
+    }
+  </script>
+</body>
+</html>
